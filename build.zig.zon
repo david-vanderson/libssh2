@@ -3,8 +3,8 @@
     .version = "1.10.0-master",
     .dependencies = .{
         .mbedtls = .{
-            .url = "https://github.com/david-vanderson/mbedtls/archive/f51953ec6893da50bf03f3b7135517b60804496d.tar.gz",
-            .hash = "122082db20b5ed57204ce1fdd9d334b470445d301ba04bd13e2704bdb2cf73725970",
+            .url = "https://github.com/david-vanderson/mbedtls/archive/f59d871a37b7552e864f899442f761326d339fc1.tar.gz",
+            .hash = "1220a0ca4c81a9f6a2ea8e0ef5b28861bd404627b41773fe651ec126273830463ce2",
         },
     },
 }
