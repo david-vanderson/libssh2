@@ -1,0 +1,10 @@
+.{
+    .name = "libssh2",
+    .version = "1.10.0-master",
+    .dependencies = .{
+        .mbedtls = .{
+            .url = "https://github.com/david-vanderson/mbedtls/archive/f51953ec6893da50bf03f3b7135517b60804496d.tar.gz",
+            .hash = "122082db20b5ed57204ce1fdd9d334b470445d301ba04bd13e2704bdb2cf73725970",
+        },
+    },
+}

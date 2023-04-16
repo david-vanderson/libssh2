@@ -1,3 +1,7 @@
+This is a fork of [libssh2](https://github.com/libssh2/libssh2), packaged for Zig.  Build logic from https://github.com/mattnite/zig-libssh2
+
+Original README follows:
+
 # libssh2 - SSH2 library
 
 libssh2 is a library implementing the SSH2 protocol, available under
