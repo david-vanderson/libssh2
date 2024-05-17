@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.build.Builder) void {
+pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -8,7 +8,7 @@ pub fn build(b: *std.build.Builder) void {
     lib.addIncludePath(.{ .path = "include" });
     lib.addIncludePath(.{ .path = "config" });
 
-    lib.addCSourceFiles(srcs, &.{});
+    lib.addCSourceFiles(.{ .files = srcs });
 
     const mbedtls_dep = b.dependency("mbedtls", .{
         .target = target,
@@ -19,7 +19,7 @@ pub fn build(b: *std.build.Builder) void {
     lib.linkLibC();
 
     lib.defineCMacro("LIBSSH2_MBEDTLS", null);
-    if (target.isWindows()) {
+    if (target.result.os.tag == .windows) {
         lib.defineCMacro("_CRT_SECURE_NO_DEPRECATE", "1");
         lib.defineCMacro("HAVE_LIBCRYPT32", null);
         lib.defineCMacro("HAVE_WINSOCK2_H", null);
@@ -27,7 +27,7 @@ pub fn build(b: *std.build.Builder) void {
         lib.defineCMacro("HAVE_SELECT", null);
         lib.defineCMacro("LIBSSH2_DH_GEX_NEW", "1");
 
-        if (target.getAbi().isGnu()) {
+        if (target.result.abi.isGnu()) {
             lib.defineCMacro("HAVE_UNISTD_H", null);
             lib.defineCMacro("HAVE_INTTYPES_H", null);
             lib.defineCMacro("HAVE_SYS_TIME_H", null);
@@ -55,7 +55,7 @@ pub fn build(b: *std.build.Builder) void {
     }
 
     b.installArtifact(lib);
-    lib.installHeadersDirectory("include", "");
+    lib.installHeadersDirectory(b.path("include"), "", .{});
 }
 
 const srcs = &.{
