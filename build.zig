@@ -5,8 +5,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     var lib = b.addStaticLibrary(.{ .name = "ssh2", .target = target, .optimize = optimize });
-    lib.addIncludePath(.{ .path = "include" });
-    lib.addIncludePath(.{ .path = "config" });
+    lib.addIncludePath(b.path("include"));
+    lib.addIncludePath(b.path("config"));
 
     lib.addCSourceFiles(.{ .files = srcs });
 
