@@ -8,7 +8,45 @@ pub fn build(b: *std.Build) void {
     lib.addIncludePath(b.path("include"));
     lib.addIncludePath(b.path("config"));
 
-    lib.addCSourceFiles(.{ .files = srcs });
+    var cflags: std.ArrayList([]const u8) = .init(b.allocator);
+    cflags.append("-DLIBSSH2_MBEDTLS") catch @panic("OOM");
+
+    if (target.result.os.tag == .windows) {
+        cflags.append("-D_CRT_SECURE_NO_DEPRECATE=1") catch @panic("OOM");
+        cflags.append("-DHAVE_LIBCRYPT32") catch @panic("OOM");
+        cflags.append("-DHAVE_WINSOCK2_H") catch @panic("OOM");
+        cflags.append("-DHAVE_IOCTLSOCKET") catch @panic("OOM");
+        cflags.append("-DHAVE_SELECT") catch @panic("OOM");
+        cflags.append("-DLIBSSH2_DH_GEX_NEW=1") catch @panic("OOM");
+
+        if (target.result.abi.isGnu()) {
+            cflags.append("-DHAVE_UNISTD_H") catch @panic("OOM");
+            cflags.append("-DHAVE_INTTYPES_H") catch @panic("OOM");
+            cflags.append("-DHAVE_SYS_TIME_H") catch @panic("OOM");
+            cflags.append("-DHAVE_GETTIMEOFDAY") catch @panic("OOM");
+        }
+    } else {
+        cflags.append("-DHAVE_UNISTD_H") catch @panic("OOM");
+        cflags.append("-DHAVE_INTTYPES_H") catch @panic("OOM");
+        cflags.append("-DHAVE_STDLIB_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_SELECT_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_UIO_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_SOCKET_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_IOCTL_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_TIME_H") catch @panic("OOM");
+        cflags.append("-DHAVE_SYS_UN_H") catch @panic("OOM");
+        cflags.append("-DHAVE_LONGLONG") catch @panic("OOM");
+        cflags.append("-DHAVE_GETTIMEOFDAY") catch @panic("OOM");
+        cflags.append("-DHAVE_INET_ADDR") catch @panic("OOM");
+        cflags.append("-DHAVE_POLL") catch @panic("OOM");
+        cflags.append("-DHAVE_SELECT") catch @panic("OOM");
+        cflags.append("-DHAVE_SOCKET") catch @panic("OOM");
+        cflags.append("-DHAVE_STRTOLL") catch @panic("OOM");
+        cflags.append("-DHAVE_SNPRINTF") catch @panic("OOM");
+        cflags.append("-DHAVE_O_NONBLOCK") catch @panic("OOM");
+    }
+
+    lib.addCSourceFiles(.{ .files = srcs, .flags = cflags.items });
 
     const mbedtls_dep = b.dependency("mbedtls", .{
         .target = target,
@@ -17,42 +55,6 @@ pub fn build(b: *std.Build) void {
     lib.linkLibrary(mbedtls_dep.artifact("mbedtls"));
 
     lib.linkLibC();
-
-    lib.defineCMacro("LIBSSH2_MBEDTLS", null);
-    if (target.result.os.tag == .windows) {
-        lib.defineCMacro("_CRT_SECURE_NO_DEPRECATE", "1");
-        lib.defineCMacro("HAVE_LIBCRYPT32", null);
-        lib.defineCMacro("HAVE_WINSOCK2_H", null);
-        lib.defineCMacro("HAVE_IOCTLSOCKET", null);
-        lib.defineCMacro("HAVE_SELECT", null);
-        lib.defineCMacro("LIBSSH2_DH_GEX_NEW", "1");
-
-        if (target.result.abi.isGnu()) {
-            lib.defineCMacro("HAVE_UNISTD_H", null);
-            lib.defineCMacro("HAVE_INTTYPES_H", null);
-            lib.defineCMacro("HAVE_SYS_TIME_H", null);
-            lib.defineCMacro("HAVE_GETTIMEOFDAY", null);
-        }
-    } else {
-        lib.defineCMacro("HAVE_UNISTD_H", null);
-        lib.defineCMacro("HAVE_INTTYPES_H", null);
-        lib.defineCMacro("HAVE_STDLIB_H", null);
-        lib.defineCMacro("HAVE_SYS_SELECT_H", null);
-        lib.defineCMacro("HAVE_SYS_UIO_H", null);
-        lib.defineCMacro("HAVE_SYS_SOCKET_H", null);
-        lib.defineCMacro("HAVE_SYS_IOCTL_H", null);
-        lib.defineCMacro("HAVE_SYS_TIME_H", null);
-        lib.defineCMacro("HAVE_SYS_UN_H", null);
-        lib.defineCMacro("HAVE_LONGLONG", null);
-        lib.defineCMacro("HAVE_GETTIMEOFDAY", null);
-        lib.defineCMacro("HAVE_INET_ADDR", null);
-        lib.defineCMacro("HAVE_POLL", null);
-        lib.defineCMacro("HAVE_SELECT", null);
-        lib.defineCMacro("HAVE_SOCKET", null);
-        lib.defineCMacro("HAVE_STRTOLL", null);
-        lib.defineCMacro("HAVE_SNPRINTF", null);
-        lib.defineCMacro("HAVE_O_NONBLOCK", null);
-    }
 
     b.installArtifact(lib);
     lib.installHeadersDirectory(b.path("include"), "", .{});
