@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -9,41 +9,48 @@ pub fn build(b: *std.Build) void {
     lib.addIncludePath(b.path("config"));
 
     var cflags: std.ArrayList([]const u8) = .init(b.allocator);
-    cflags.append("-DLIBSSH2_MBEDTLS") catch @panic("OOM");
+    defer cflags.deinit();
+    try cflags.append("-DLIBSSH2_MBEDTLS");
 
     if (target.result.os.tag == .windows) {
-        cflags.append("-D_CRT_SECURE_NO_DEPRECATE=1") catch @panic("OOM");
-        cflags.append("-DHAVE_LIBCRYPT32") catch @panic("OOM");
-        cflags.append("-DHAVE_WINSOCK2_H") catch @panic("OOM");
-        cflags.append("-DHAVE_IOCTLSOCKET") catch @panic("OOM");
-        cflags.append("-DHAVE_SELECT") catch @panic("OOM");
-        cflags.append("-DLIBSSH2_DH_GEX_NEW=1") catch @panic("OOM");
+        try cflags.appendSlice(&.{
+            "-D_CRT_SECURE_NO_DEPRECATE=1",
+            "-DHAVE_LIBCRYPT32",
+            "-DHAVE_WINSOCK2_H",
+            "-DHAVE_IOCTLSOCKET",
+            "-DHAVE_SELECT",
+            "-DLIBSSH2_DH_GEX_NEW=1",
+        });
 
         if (target.result.abi.isGnu()) {
-            cflags.append("-DHAVE_UNISTD_H") catch @panic("OOM");
-            cflags.append("-DHAVE_INTTYPES_H") catch @panic("OOM");
-            cflags.append("-DHAVE_SYS_TIME_H") catch @panic("OOM");
-            cflags.append("-DHAVE_GETTIMEOFDAY") catch @panic("OOM");
+            try cflags.appendSlice(&.{
+                "-DHAVE_UNISTD_H",
+                "-DHAVE_INTTYPES_H",
+                "-DHAVE_SYS_TIME_H",
+                "-DHAVE_GETTIMEOFDAY",
+            });
         }
     } else {
-        cflags.append("-DHAVE_UNISTD_H") catch @panic("OOM");
-        cflags.append("-DHAVE_INTTYPES_H") catch @panic("OOM");
-        cflags.append("-DHAVE_STDLIB_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_SELECT_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_UIO_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_SOCKET_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_IOCTL_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_TIME_H") catch @panic("OOM");
-        cflags.append("-DHAVE_SYS_UN_H") catch @panic("OOM");
-        cflags.append("-DHAVE_LONGLONG") catch @panic("OOM");
-        cflags.append("-DHAVE_GETTIMEOFDAY") catch @panic("OOM");
-        cflags.append("-DHAVE_INET_ADDR") catch @panic("OOM");
-        cflags.append("-DHAVE_POLL") catch @panic("OOM");
-        cflags.append("-DHAVE_SELECT") catch @panic("OOM");
-        cflags.append("-DHAVE_SOCKET") catch @panic("OOM");
-        cflags.append("-DHAVE_STRTOLL") catch @panic("OOM");
-        cflags.append("-DHAVE_SNPRINTF") catch @panic("OOM");
-        cflags.append("-DHAVE_O_NONBLOCK") catch @panic("OOM");
+        try cflags.appendSlice(&.{
+            "-DHAVE_UNISTD_H",
+            "-DHAVE_INTTYPES_H",
+            "-DHAVE_STDLIB_H",
+            "-DHAVE_SYS_SELECT_H",
+            "-DHAVE_SYS_UIO_H",
+            "-DHAVE_SYS_SOCKET_H",
+            "-DHAVE_SYS_IOCTL_H",
+            "-DHAVE_SYS_TIME_H",
+            "-DHAVE_SYS_UN_H",
+            "-DHAVE_LONGLONG",
+            "-DHAVE_GETTIMEOFDAY",
+            "-DHAVE_INET_ADDR",
+            "-DHAVE_POLL",
+            "-DHAVE_SELECT",
+            "-DHAVE_SOCKET",
+            "-DHAVE_STRTOLL",
+            "-DHAVE_SNPRINTF",
+            "-DHAVE_O_NONBLOCK",
+        });
     }
 
     lib.addCSourceFiles(.{ .files = srcs, .flags = cflags.items });
